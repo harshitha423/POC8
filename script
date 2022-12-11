@@ -1,0 +1,35 @@
+pipeline {
+    
+    agent any
+    environment {
+        dockerImage =''
+        registry = '423445/testingbuild'
+        registryCredential = 'docker-cred'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '82aa4fec-1ad0-42aa-b44d-cd789e70e7a4', url: 'https://github.com/harshitha423/dockertest1.git']]])
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build registry
+                }
+            }
+        }
+        
+        stage ('Uploading Image') {
+            steps {
+                script {
+                        docker.withRegistry('',registryCredential ) {
+                        dockerImage.push()
+                    }
+                } 
+            }
+        }
+    }
+}
